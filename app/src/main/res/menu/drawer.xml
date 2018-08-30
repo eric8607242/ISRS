@@ -4,7 +4,6 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/action_home"
-            android:checked="true"
             android:icon="@mipmap/home"
             android:title="首頁" />
 

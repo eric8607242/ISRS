@@ -1,5 +1,7 @@
 package com.example.eric.isrs;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -9,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -80,39 +83,43 @@ public class Home extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-                mDrawerLayout.closeDrawer(GravityCompat.START);
+
+//                mDrawerLayout.closeDrawer(GravityCompat.START);
 
                 int id = item.getItemId();
 
-                if(id == R.id.action_home){
-                    Toast.makeText(Home.this, "首頁", Toast.LENGTH_LONG).show();
-                    return true;
-                }else if(id == R.id.action_about) {
-                    Toast.makeText(Home.this, "關於", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(Home.this, About.class);
-                    startActivity(intent);
+                displaySelectedScreen(id);
+//                if(id == R.id.action_home){
+//                    Toast.makeText(Home.this, "首頁", Toast.LENGTH_LONG).show();
+//                    return true;
+//                }else if(id == R.id.action_about) {
+//                    Toast.makeText(Home.this, "關於", Toast.LENGTH_LONG).show();
+//                    Intent intent = new Intent(Home.this, About.class);
+//                    startActivity(intent);
+//
+//                    return true;
+//                }else if(id == R.id.action_help){
+//                    Toast.makeText(Home.this, "幫忙", Toast.LENGTH_LONG).show();
+//                    return true;
+//                }else if(id == R.id.action_logout){
+//                    Toast.makeText(Home.this, "登出", Toast.LENGTH_LONG).show();
+//
+//                    SharedPreferences settings = getSharedPreferences("setting", MODE_PRIVATE);
+//                    SharedPreferences.Editor ed = settings.edit();
+//
+//                    ed.clear().commit();
+//
+//                    Intent intent;
+//                    intent = new Intent(Home.this, MainActivity.class);
+//                    finish();
+//                    startActivity(intent);
+//                }
 
-                    return true;
-                }else if(id == R.id.action_help){
-                    Toast.makeText(Home.this, "幫忙", Toast.LENGTH_LONG).show();
-                    return true;
-                }else if(id == R.id.action_logout){
-                    Toast.makeText(Home.this, "登出", Toast.LENGTH_LONG).show();
-
-                    SharedPreferences settings = getSharedPreferences("setting", MODE_PRIVATE);
-                    SharedPreferences.Editor ed = settings.edit();
-
-                    ed.clear().commit();
-
-                    Intent intent;
-                    intent = new Intent(Home.this, MainActivity.class);
-                    finish();
-                    startActivity(intent);
-                }
-
-                return false;
+                return true;
             }
         });
+
+//        displaySelectedScreen(R.id.action_home);
 
     }
 
@@ -237,6 +244,27 @@ public class Home extends AppCompatActivity {
             }
 
         }
+    }
+
+    private void displaySelectedScreen(int id){
+        android.support.v4.app.Fragment fragment = null;
+
+        switch (id){
+            case R.id.action_about:
+                fragment = new FragmentAbout();
+                break;
+            case R.id.action_home:
+                break;
+        }
+
+        if(fragment != null){
+            android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.home_content, fragment);
+            ft.commit();
+        }
+
+
+        mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 
 }
