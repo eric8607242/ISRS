@@ -504,7 +504,10 @@ public class Recognition extends AppCompatActivity {
         }
 
         final File folder = new File(savePath+"/ISRS/");
-        folder.mkdir();
+
+        if(!folder.exists()) {
+            folder.mkdir();
+        }
 
         final File file;
 
@@ -515,8 +518,11 @@ public class Recognition extends AppCompatActivity {
             file = new File(folder, sheetID+ "_" + reRecNum + ".jpeg");
         }
 
-        Toast.makeText(Recognition.this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
 
+//        Toast.makeText(Recognition.this,file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+        if(file.exists()){
+            file.delete();
+        }
         file.createNewFile();
 
         //準備OnImageAvilableListener
@@ -576,7 +582,6 @@ public class Recognition extends AppCompatActivity {
                 picHeight = jpegSizes[0].getHeight();
             }
 
-
             //儲存為影像檔 輸出給UI的TextureView顯示
             ImageReader imgReader = ImageReader.newInstance(picWidth, picHeight, ImageFormat.JPEG, 1);
 
@@ -633,11 +638,7 @@ public class Recognition extends AppCompatActivity {
                                 progressBar.setIndeterminate(true);
                                 progressBar.setVisibility(View.VISIBLE);
 
-//                                if(mprogressList.isEmpty()){
-//                                    mprogressList.add(progressBar);
-//                                }else {
-                                    mprogressList.set(reRecNum - ListOffset, progressBar);
-//                                }
+                                mprogressList.set(reRecNum - ListOffset, progressBar);
 
                                 LinearLayout ll = mlinearLayout.get(reRecNum-ListOffset);
 
@@ -649,8 +650,6 @@ public class Recognition extends AppCompatActivity {
 
                                 reRecFlag = false;
                             }
-
-
                             Toast.makeText(Recognition.this, "拍照完成，照片上傳中\n", Toast.LENGTH_SHORT).show();
                             startPreview();
                         }
@@ -706,14 +705,20 @@ public class Recognition extends AppCompatActivity {
             }
 
             mprogressList.get(picNum-ListOffset).setVisibility(View.GONE);
+
             if(s.equals("success")){
                 setBackground(mlinearLayout.get(picNum-ListOffset), 0XFF02c874);
-
                 TextView tv = (TextView) mtextList.get(picNum-ListOffset);
                 setTVIcon(tv, R.mipmap.done);
                 tv.setText("問卷:"+picNum+"          " + "完成");
-            }else {
 
+
+                File delFile = new File(filePath);
+                if(delFile.exists()) {
+                    delFile.delete();
+                }
+
+            }else {
                 setBackground(mlinearLayout.get(picNum-ListOffset), 0XFFff2d2d);
 
                 TextView tv = (TextView) mtextList.get(picNum-ListOffset);
@@ -722,8 +727,8 @@ public class Recognition extends AppCompatActivity {
                 }else if(s.equals("file_failed")){
                     tv.setText("問卷:"+picNum+"          " + "上傳失敗");
                 }
-                setTVIcon(tv, R.mipmap.error);
 
+                setTVIcon(tv, R.mipmap.error);
                 tv.setOnClickListener(new View.OnClickListener() {
                     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
@@ -731,7 +736,6 @@ public class Recognition extends AppCompatActivity {
                         reRecNum = picNum;
 
                         File imgFile = new File(filePath);
-
                         closeCamera();
 
                         setContentView(view_fail);
@@ -741,9 +745,9 @@ public class Recognition extends AppCompatActivity {
                         }
                     }
                 });
-
             }
         }
+
 
         @Override
         protected String doInBackground(Map<String, String>... maps) {

@@ -27,6 +27,8 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
 
+    int testi;
+
     @Override
     protected String doInBackground(Map<String, String>... maps) {
         return null;
@@ -80,7 +82,6 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
             e.printStackTrace();
         }
 
-
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 
         connection.setConnectTimeout(10 * 10000000);
@@ -97,6 +98,7 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
 
         String strContentDisposition = "Content-Disposition: form-data; name=\"file\"; filename=\""+ picNum +".jpeg\"";
         String strContentType = "Content-Type:image/jpeg";
+        String strContentLength = "Content-Length:";
 
         connection.connect();
 
@@ -104,11 +106,9 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
         dataOS.writeBytes(HYPHENS + BOUNDARY + CRLF);
         dataOS.writeBytes(strContentDisposition + CRLF);
         dataOS.writeBytes(strContentType + CRLF);
-        dataOS.writeBytes(CRLF);
 
 
         File file = new File(filepath);
-
         if(!file.exists()){
             return "file_failed";
         }
@@ -118,6 +118,9 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
         bm.compress(Bitmap.CompressFormat.JPEG, 100, out);
 
         byte[] byteData = out.toByteArray();
+
+//        dataOS.writeBytes(strContentLength+String.valueOf(byteData.length));
+        dataOS.writeBytes(CRLF);
 
         dataOS.write(byteData, 0 , byteData.length);
 
@@ -130,9 +133,9 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
             InputStream inputStream = connection.getInputStream();
 
             connection.disconnect();
-            inputStream.close();
             return dealResponseResult(inputStream);
         }else {
+
             connection.disconnect();
             throw new Exception("Non ok response returned");
         }
@@ -179,8 +182,6 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
         } finally {
             httpURLConnection.disconnect();
         }
-
-
         return null;
     }
 
@@ -201,8 +202,6 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
 
             /* optional request header */
             httpURLConnection.setRequestProperty("Accept", "application/json");
-
-
 
             httpURLConnection.connect();
 

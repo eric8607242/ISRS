@@ -45,7 +45,6 @@ public class Login extends AppCompatActivity {
 
     private void validate(final String userName, final String userPassword){
         //connect to server to validate login correct
-        String post_result = null;
         Map<String, String> params = new HashMap<String, String>();
 
         params.put("username", userName);
@@ -79,15 +78,12 @@ public class Login extends AppCompatActivity {
             mProgressBar.setVisibility(View.GONE);
 
             if(s.equals("login_success")){
-
-
                 SharedPreferences settings = getSharedPreferences("setting", MODE_PRIVATE);
 
                 settings.edit()
                         .putString("USERNAME", userName)
                         .putString("PASSWORD", userPassword)
                         .commit();
-
 
                 Toast.makeText(Login.this, "登入成功", Toast.LENGTH_LONG).show();
 

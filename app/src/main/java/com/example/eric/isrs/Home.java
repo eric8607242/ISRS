@@ -35,7 +35,6 @@ import java.util.Map;
 
 public class Home extends AppCompatActivity {
 
-
     private NavigationView mNavationgationView;
     private DrawerLayout mDrawerLayout;
     private Toolbar mToolbar;
@@ -82,10 +81,6 @@ public class Home extends AppCompatActivity {
         displaySelectedScreen(R.id.action_home);
 
     }
-
-
-
-
 
 
     private void displaySelectedScreen(int id){

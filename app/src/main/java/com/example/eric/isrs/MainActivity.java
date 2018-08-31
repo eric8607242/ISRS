@@ -59,8 +59,6 @@ public class MainActivity extends AppCompatActivity {
         mUserName = settings.getString("USERNAME", "failed");
         mPassWord = settings.getString("PASSWORD", "failed");
 
-
-
         Map<String, String> params = new HashMap<String, String>();
         params.put("username", mUserName);
         params.put("password", mPassWord);
