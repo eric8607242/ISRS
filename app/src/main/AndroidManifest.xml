@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <uses-feature android:name="android.hardware.camera2.full" />
 
@@ -25,7 +26,6 @@
         <activity android:name=".Login" />
         <activity android:name=".Home" />
         <activity android:name=".Recognition" />
-        <activity android:name=".About" />
     </application>
 
 </manifest>

@@ -1,5 +1,6 @@
 package com.example.eric.isrs;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -21,6 +22,8 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.Map;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
 
@@ -63,7 +66,7 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
         return resultData;
     }
 
-    public String uploadImage(String filepath, int picNum) throws Exception{
+    public String uploadImage(String filepath, String picNum, String userName) throws Exception{
 
         final String BOUNDARY = "==================================";
         final String HYPHENS = "--";
@@ -72,18 +75,23 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
         URL url = null;
         try {
 //            url = new URL("http://10.0.2.2:8000/pic");
-            url = new URL("http://18.218.154.134/mobile/recognition/123/");
+            url = new URL("http://18.218.154.134/mobile/recognition/"+userName+"/");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+
+
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
-        connection.setReadTimeout(30000);
-        connection.setConnectTimeout(30000);
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Connection", "Keep-Alive");
+
+        connection.setConnectTimeout(10 * 10000000);
+        connection.setReadTimeout(10*10000000);
+
         connection.setDoOutput(true);
         connection.setDoInput(true);
-        connection.setUseCaches(false); 
+        connection.setUseCaches(false);
+
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Connection", "Keep-Alive");
 
         connection.setRequestProperty("Content-Type", "multipart/form-data; boundary = " + BOUNDARY);
 
@@ -100,38 +108,34 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
 
 
         File file = new File(filepath);
-        FileInputStream fileInputStream = new FileInputStream(file);
-        int iBytesAvailable = fileInputStream.available();
 
-        int compressPer = countCompressPer(iBytesAvailable);
+        if(!file.exists()){
+            return "file_failed";
+        }
 
-        Bitmap bm = BitmapFactory.decodeFile(file.getAbsolutePath());
+        Bitmap bm = BitmapFactory.decodeFile(filepath);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        bm.compress(Bitmap.CompressFormat.JPEG, compressPer, out);
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, out);
 
         byte[] byteData = out.toByteArray();
+
         dataOS.write(byteData, 0 , byteData.length);
 
         dataOS.writeBytes(CRLF + HYPHENS + BOUNDARY + HYPHENS + CRLF);
         dataOS.flush();
         dataOS.close();
 
-
         int status = connection.getResponseCode();
         if(status == HttpURLConnection.HTTP_OK){
             InputStream inputStream = connection.getInputStream();
 
             connection.disconnect();
-            fileInputStream.close();
+            inputStream.close();
             return dealResponseResult(inputStream);
         }else {
+            connection.disconnect();
             throw new Exception("Non ok response returned");
         }
-    }
-
-    private int countCompressPer(int fileSize){
-        int compressPer = 2000000 / fileSize;
-        return compressPer;
     }
 
     protected String validateAccount(Map<String, String>... maps) {
@@ -220,5 +224,6 @@ public class AsyncHttp extends AsyncTask<Map<String, String>, Integer, String> {
         }
         return "null";
     }
+
 
 }

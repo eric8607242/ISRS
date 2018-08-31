@@ -1,7 +1,9 @@
 package com.example.eric.isrs;
 
+import android.app.VoiceInteractor;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +12,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.android.volley.Cache;
+import com.android.volley.Network;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -90,14 +104,7 @@ public class MainActivity extends AppCompatActivity {
             return re;
         }
 
-        /**
-         * Runs on the UI thread after {@link #publishProgress} is invoked.
-         * The specified values are the values passed to {@link #publishProgress}.
-         *
-         * @param values The values indicating progress.
-         * @see #publishProgress
-         * @see #doInBackground
-         */
+
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);

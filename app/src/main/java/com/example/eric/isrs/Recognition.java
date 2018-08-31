@@ -3,6 +3,8 @@ package com.example.eric.isrs;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -11,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -76,7 +79,9 @@ public class Recognition extends AppCompatActivity {
     private final int REQUEST_PERMISSION_CAMERA = 100;
 
     private boolean reRecFlag = false;
-    private int reRecNum = 0;
+    private int reRecNum = 1;
+    private int mRecPicNum = 1;
+    private int ListOffset = 1;
 
     private TextureView mTextureView = null;
     private SurfaceView mRectView = null;
@@ -95,6 +100,8 @@ public class Recognition extends AppCompatActivity {
     private Button mreRec;
     private Button mResult;
 
+    private TextView mCheckTitle;
+
     private ImageView mimageView;
 
     private View view_rec = null;
@@ -104,7 +111,11 @@ public class Recognition extends AppCompatActivity {
     private List<LinearLayout> mlinearLayout = new ArrayList<LinearLayout>();
     private List<TextView> mtextList = new ArrayList<TextView>();
     private List<ProgressBar> mprogressList = new ArrayList<ProgressBar>();
-    private int mRecPicNum = 0;
+
+    private int sheetID;
+    private String sheetTitle;
+
+    private String savePath;
 
     LinearLayout.LayoutParams layoutParams;
     LinearLayout.LayoutParams textParams;
@@ -154,9 +165,9 @@ public class Recognition extends AppCompatActivity {
                         int btnHeight = mBack.getHeight();
                         int shotHeight = mTakePicture.getHeight();
 
-                        int RectLeft = 45 * density;
+                        int RectLeft = 30 * density;
                         int RectTop = btnHeight + 25 * density;
-                        int RectRight = getScreenWidth() -45 * density;
+                        int RectRight = getScreenWidth() -30 * density;
                         int RectBottom = getScreenHeight()-shotHeight - 40 * density;
 
                         canvas.drawRect(RectLeft, RectTop, RectRight, RectBottom, paint);
@@ -175,6 +186,12 @@ public class Recognition extends AppCompatActivity {
         super.onCreate(saveInstanceState);
 
 
+        savePath = String.valueOf(getFilesDir());
+
+
+        sheetID = getIntent().getIntExtra("SHEET_ID", 0);
+        sheetTitle = getIntent().getStringExtra("SHEET_TITLES");
+
         LayoutInflater inflater = getLayoutInflater();
         view_rec = inflater.inflate(R.layout.activity_recognition, null);
         view_result = inflater.inflate(R.layout.activity_check_upload, null);
@@ -185,6 +202,9 @@ public class Recognition extends AppCompatActivity {
         mTextureView = findViewById(R.id.rec_textureView);
         mRectView = (SurfaceView)findViewById(R.id.rec_surfaceView);
         mLinearLayout = (LinearLayout)view_result.findViewById(R.id.check_linearlayout);
+
+        mCheckTitle = (TextView)view_result.findViewById(R.id.check_title);
+        mCheckTitle.setText(sheetTitle);
 
         mRectView.setZOrderOnTop(true);
         mRectView.getHolder().setFormat(PixelFormat.TRANSPARENT);
@@ -236,7 +256,11 @@ public class Recognition extends AppCompatActivity {
         mTakePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePicture();
+                try {
+                    takePicture();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -256,6 +280,11 @@ public class Recognition extends AppCompatActivity {
                 100,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
+
+        Reghttp http = new Reghttp(savePath+ "/" + sheetID+ "_0.jpeg", 0);
+        http.execute();
+
+        Toast.makeText(Recognition.this, "麻煩將問卷對準中間的框框拍攝\n", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -468,20 +497,28 @@ public class Recognition extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void takePicture(){
+    private void takePicture() throws IOException {
         if(mCameraDevice == null){
             Toast.makeText(Recognition.this, "Camera錯誤", Toast.LENGTH_LONG).show();
             return;
         }
 
+        final File folder = new File(savePath+"/ISRS/");
+        folder.mkdir();
+
         final File file;
 
         //準備影像檔
         if(reRecFlag == false) {
-            file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath(), mRecPicNum + ".jpeg");
+            file = new File(folder, sheetID+ "_" + mRecPicNum + ".jpeg");
         }else{
-            file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath(), reRecNum + ".jpeg");
+            file = new File(folder, sheetID+ "_" + reRecNum + ".jpeg");
         }
+
+        Toast.makeText(Recognition.this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+        file.createNewFile();
+
         //準備OnImageAvilableListener
         ImageReader.OnImageAvailableListener imgReaderOnImageAvilable =
                 new ImageReader.OnImageAvailableListener() {
@@ -580,40 +617,41 @@ public class Recognition extends AppCompatActivity {
                             Reghttp http;
 
                             if(reRecFlag == false) {
-                                UploadTextUpdate("Image:"+mRecPicNum+"          " + "sending");
+                                UploadTextUpdate("問卷:"+mRecPicNum+"          " + "上傳中");
 
-                                http = new Reghttp(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/" + mRecPicNum + ".jpeg", mRecPicNum);
+                                http = new Reghttp(file.getAbsolutePath(), mRecPicNum);
                                 http.execute();
 
                                 mRecPicNum++;
                             }else {
-                                TextView tv = (TextView) mtextList.get(reRecNum);
+                                TextView tv = (TextView) mtextList.get(reRecNum-ListOffset);
 
                                 tv.setCompoundDrawables(null, null, null, null);
-                                tv.setText("Image:"+reRecNum+"          " + "sending");
+                                tv.setText("問卷:"+reRecNum+"          " + "上傳中");
 
                                 ProgressBar progressBar = new ProgressBar(Recognition.this,null,android.R.attr.progressBarStyleHorizontal);
                                 progressBar.setIndeterminate(true);
                                 progressBar.setVisibility(View.VISIBLE);
 
-                                mprogressList.set(reRecNum, progressBar);
+//                                if(mprogressList.isEmpty()){
+//                                    mprogressList.add(progressBar);
+//                                }else {
+                                    mprogressList.set(reRecNum - ListOffset, progressBar);
+//                                }
 
-                                LinearLayout ll = mlinearLayout.get(reRecNum);
+                                LinearLayout ll = mlinearLayout.get(reRecNum-ListOffset);
 
                                 setBackground(ll, 0XFF0072e3);
                                 ll.addView(progressBar, progressParams);
 
-                                http = new Reghttp(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath() + "/" + reRecNum + ".jpeg", reRecNum);
+                                http = new Reghttp(file.getAbsolutePath(), reRecNum);
                                 http.execute();
 
                                 reRecFlag = false;
-
-                                closeCamera();
-                                setContentView(view_result);
                             }
 
 
-                            Toast.makeText(Recognition.this, "拍照完成\n", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Recognition.this, "拍照完成，照片上傳中\n", Toast.LENGTH_SHORT).show();
                             startPreview();
                         }
 
@@ -663,14 +701,27 @@ public class Recognition extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            mprogressList.get(picNum).setVisibility(View.GONE);
-            if(s.equals("failed")){
+            if(picNum == 0){
+                return;
+            }
 
-                setBackground(mlinearLayout.get(picNum), 0XFFff2d2d);
+            mprogressList.get(picNum-ListOffset).setVisibility(View.GONE);
+            if(s.equals("success")){
+                setBackground(mlinearLayout.get(picNum-ListOffset), 0XFF02c874);
 
-                TextView tv = (TextView) mtextList.get(picNum);
-                tv.setText("Image:"+picNum+"          " + "failed");
+                TextView tv = (TextView) mtextList.get(picNum-ListOffset);
+                setTVIcon(tv, R.mipmap.done);
+                tv.setText("問卷:"+picNum+"          " + "完成");
+            }else {
 
+                setBackground(mlinearLayout.get(picNum-ListOffset), 0XFFff2d2d);
+
+                TextView tv = (TextView) mtextList.get(picNum-ListOffset);
+                if(s.equals("recognition_failed")){
+                    tv.setText("問卷:"+picNum+"          " + "辨識失敗");
+                }else if(s.equals("file_failed")){
+                    tv.setText("問卷:"+picNum+"          " + "上傳失敗");
+                }
                 setTVIcon(tv, R.mipmap.error);
 
                 tv.setOnClickListener(new View.OnClickListener() {
@@ -679,7 +730,7 @@ public class Recognition extends AppCompatActivity {
                     public void onClick(View v) {
                         reRecNum = picNum;
 
-                        File imgFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath()+"/"+picNum+".jpeg");
+                        File imgFile = new File(filePath);
 
                         closeCamera();
 
@@ -691,23 +742,21 @@ public class Recognition extends AppCompatActivity {
                     }
                 });
 
-            }else{
-                setBackground(mlinearLayout.get(picNum), 0XFF02c874);
-
-                TextView tv = (TextView) mtextList.get(picNum);
-                setTVIcon(tv, R.mipmap.done);
-                tv.setText("Image:"+picNum+"          " + "finish");
             }
         }
 
         @Override
         protected String doInBackground(Map<String, String>... maps) {
+
+            SharedPreferences settings = getSharedPreferences("setting", MODE_PRIVATE);
+            String mUserName = settings.getString("USERNAME", "failed");
+
             try {
-                return super.uploadImage(filePath, picNum);
+                return super.uploadImage(filePath, String.valueOf(sheetID) +"_"+ String.valueOf(picNum), mUserName);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return "failed";
+            return "file_failed";
         }
     }
 
