@@ -712,6 +712,7 @@ public class Recognition extends AppCompatActivity {
                 setTVIcon(tv, R.mipmap.done);
                 tv.setText("問卷:"+picNum+"          " + "完成");
 
+                tv.setOnClickListener(null);
 
                 File delFile = new File(filePath);
                 if(delFile.exists()) {

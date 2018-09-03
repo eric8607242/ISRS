@@ -1,5 +1,6 @@
 package com.example.eric.isrs;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -23,12 +24,15 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
+@SuppressLint("ValidFragment")
 public class FragmentSheet extends Fragment {
     View v;
     private ProgressBar mProgressBar;
+    private String mUserName;
 
-    public FragmentSheet(){
-
+    @SuppressLint("ValidFragment")
+    public FragmentSheet(String un){
+        this.mUserName = un;
     }
 
     @Override
@@ -41,7 +45,7 @@ public class FragmentSheet extends Fragment {
         LinearLayout layout = (LinearLayout)getView().findViewById(R.id.home_linearlayout);
 
 
-        Homehttp http = new Homehttp("123", layout, mProgressBar);
+        Homehttp http = new Homehttp(mUserName, layout, mProgressBar);
         http.execute();
     }
 

@@ -3,6 +3,7 @@ package com.example.eric.isrs;
 import android.app.VoiceInteractor;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -146,6 +147,14 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         logIn(v);
+                    }
+                });
+
+                mButtonSignup.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://18.218.154.134/auth/register/"));
+                        startActivity(browserIntent);
                     }
                 });
 

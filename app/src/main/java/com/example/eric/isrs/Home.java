@@ -38,6 +38,7 @@ public class Home extends AppCompatActivity {
     private NavigationView mNavationgationView;
     private DrawerLayout mDrawerLayout;
     private Toolbar mToolbar;
+    private String mUserName;
 
     private View mHeader;
 
@@ -63,7 +64,7 @@ public class Home extends AppCompatActivity {
 
         mHeaderText = mNavationgationView.getHeaderView(0).findViewById(R.id.home_txtHeader);
         SharedPreferences settings = getSharedPreferences("setting", MODE_PRIVATE);
-        String mUserName = settings.getString("USERNAME", "failed");
+        mUserName = settings.getString("USERNAME", "failed");
 
         mHeaderText.setText(mUserName);
 
@@ -94,7 +95,7 @@ public class Home extends AppCompatActivity {
                 fragment = new FragmentUse();
                 break;
             case R.id.action_home:
-                fragment = new FragmentSheet();
+                fragment = new FragmentSheet(mUserName);
                 break;
             case R.id.action_logout:
                 SharedPreferences settings = getSharedPreferences("setting", MODE_PRIVATE);
